@@ -1,4 +1,4 @@
-name: Build Windows MSVC
+name: Build and Upload Entire Project
 
 on:
   push:
@@ -22,8 +22,8 @@ jobs:
       - name: Build project
         run: cargo build --release
 
-      - name: Upload artifact
+      - name: Upload entire project directory
         uses: actions/upload-artifact@v4
         with:
-          name: my-rust-binary
-          path: target/release/*.exe
+          name: full-project
+          path: ./
