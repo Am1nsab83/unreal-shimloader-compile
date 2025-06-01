@@ -1,29 +1,37 @@
-name: Build and Upload Entire Project
+name: Build and Release (MSVC)
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    tags:
+      - '*'  # Triggers on any tag push
 
 jobs:
   build:
+    name: Build with MSVC and Release
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust toolchain (MSVC)
+        uses: actions-rs/toolchain@v1
         with:
-          targets: x86_64-pc-windows-msvc
+          profile: minimal
+          toolchain: stable
+          override: true
+          target: x86_64-pc-windows-msvc
 
-      - name: Build project
+      - name: Build in release mode
         run: cargo build --release
 
-      - name: Upload entire project directory
-        uses: actions/upload-artifact@v4
+      - name: Zip the target directory
+        run: |
+          Compress-Archive -Path target -DestinationPath target.zip
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
         with:
-          name: full-project
-          path: ./
+          files: target.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
